@@ -1,23 +1,66 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+
+def versionMajor = 0
+def versionMinor = 0
+def versionPatch = 1
 
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
+    dataBinding {
+        enabled = true
+    }
+
+    // Add for using latest experimental build of Android Extensions
+    androidExtensions {
+        experimental = true
+    }
+
+    testOptions.unitTests {
+        includeAndroidResources = true
+    }
+
+
     defaultConfig {
         applicationId "com.goalassistant.app"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
 
+
+        versionCode versionMajor * 10000+ versionMinor * 100+ versionPatch
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+
+
+        vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+
+        setProperty("archivesBaseName", "goal-assistant-${defaultConfig.versionName}")
     }
 
     buildTypes {
         release {
+
+            resValue "string", "app_version", "${defaultConfig.versionName}"
+
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+
+        }
+
+
+        debug {
+
+            versionNameSuffix ".debug"
+            resValue "string", "app_version", "${defaultConfig.versionName}${versionNameSuffix}"
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -27,11 +70,93 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    implementation "androidx.appcompat:appcompat:$androidxCompatVersion"
+    implementation "androidx.core:core-ktx:$androidCorexVersion"
+    implementation "androidx.preference:preference-ktx:$androidxVersion"
+    implementation "androidx.recyclerview:recyclerview:$recyclerviewVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
+
+    // LiveData & ViewModel
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+
+    implementation "com.google.android.material:material:$materialVersion"
+
+    // Data binding
+    kapt "com.android.databinding:compiler:$databindingVersion"
+
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutines"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutines"
+
+
+
+    implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
+            {
+                // exclude Retrofit’s OkHttp peer-dependency module and define your own module import
+//                exclude module: 'okhttp'
+
+                exclude group: "com.squareup.okhttp3", module: "okhttp"
+            }
+
+
+    // Dagger 2
+    implementation "com.google.dagger:dagger:$dagger2_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger2_version"
+
+
+    //Rx
+    implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
+
+    // RxBindig
+    implementation "com.jakewharton.rxbinding2:rxbinding:$rxbindingVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding-kotlin:$rxbindingVersion"
+
+
+
+    //Alert
+    implementation "com.irozon.sneaker:sneaker:$sneakerVersion"
+
+
+    implementation 'com.savvi.datepicker:rangepicker:1.3.0'
+
+
+    implementation "com.wang.avi:library:$aviVersion"
+
+
+
+
+
+    // Testing code should not be included in the main code.
+    // Once https://issuetracker.google.com/128612536 is fixed this can be fixed.
+    debugImplementation "androidx.fragment:fragment-testing:$fragmentVersion"
+    implementation "androidx.test:core:$androidXTestCoreVersion"
+
+
+    //implementation
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
+    testImplementation "androidx.arch.core:core-testing:$archTestingVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+
+    // AndroidX Test - JVM testing
+    testImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
+    testImplementation "androidx.test.ext:junit:$androidXTestExtKotlinRunnerVersion"
+
+    testImplementation "org.mockito:mockito-core:${mockito_version}"
+
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoCoreVersion"
+
+    androidTestImplementation "androidx.test:runner:$testRunnerVersion"
+    androidTestImplementation "androidx.test:rules:$testRunnerVersion"
+    androidTestImplementation "androidx.test:core:$testRunnerVersion"
+    androidTestImplementation "androidx.test:monitor:$testRunnerVersion"
+
+
+    // For instrumentation tests on Android devices and emulators
+    androidTestImplementation "org.mockito:mockito-android:$mockito_version"
+
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
 }
